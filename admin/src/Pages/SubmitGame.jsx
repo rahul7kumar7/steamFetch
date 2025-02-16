@@ -1,4 +1,6 @@
 import {useState, useEffect} from "react";
+import {Link} from "react-router-dom";
+import { IoIosCloseCircle } from "react-icons/io";
 
 export default function SubmitGame() {
     const [gameId, setGameId] = useState(null);
@@ -47,6 +49,25 @@ export default function SubmitGame() {
         console.log(id);
         setGameId(id);
     }
+
+    const handleImage = (e) => {
+        console.log(e.target.currentSrc);
+        const imgModal = document.getElementById("imgModal");
+        const imgOverlay = document.getElementById("imgOverlay");
+        const imgElement = document.getElementById("modalImage");
+        imgElement.src = e.target.currentSrc
+        // .replace(".600x338", "");
+        imgModal.classList.remove("hidden");
+        imgOverlay.classList.remove("hidden");
+
+
+        imgModal.appendChild(imgModalImg);
+    };
+
+    const closeModal = () => {
+        document.getElementById("imgModal").classList.add("hidden");
+        document.getElementById("imgOverlay").classList.add("hidden");
+    };
 
     const handleChange = (e) => {
         setFormData((prev) => ({
@@ -118,7 +139,7 @@ export default function SubmitGame() {
                                 <label htmlFor="" className="font-semibold underline uppercase">Screenshots: </label>
                                 <div className="flex flex-row gap-2 flex-wrap">
                                     {steamData && steamData[gameId].data.screenshots.map(screenshot => (
-                                        <img src={screenshot.path_thumbnail} alt="" className="w-[220px] h-auto"/>
+                                        <img src={screenshot.path_thumbnail} onClick={handleImage} alt="" className="w-1/4 h-auto cursor-pointer transition-transform hover:scale-105"/>
                                     ))}
                                 </div>
                             </div>
@@ -149,6 +170,23 @@ export default function SubmitGame() {
                     </form>
                 )}
 
+            </div>
+
+
+
+            <div id="imgOverlay" className="hidden fixed top-0 left-0 w-full h-full bg-black opacity-80 z-40" onClick={closeModal}></div>
+
+            <div
+                id="imgModal"
+                className="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-50 flex flex-col items-center"
+            >
+                <button
+                    onClick={closeModal}
+                    className="absolute top-1 right-1 cursor-pointer"
+                >
+                    <IoIosCloseCircle className="h-5 w-5" />
+                </button>
+                <img id="modalImage" className="max-w-full max-h-[80vh] rounded-lg shadow-lg" />
             </div>
         </>
     )

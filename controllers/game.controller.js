@@ -1,0 +1,34 @@
+import Game from '../models/game.model.js'
+
+export default async function addGame (req, res) {
+    console.log('ehhdskjhdkjshfdjkshdkjh')
+    try {
+        const {
+            appId, name, description, shortDescription,
+            genres, category, price, devs,
+            pubs, screenshots, trailer, website, headerImage,
+            capsuleImage
+        } = req.body;
+
+    const newGame = await Game.create({
+        appId:appId,
+        name:name,
+        description:description,
+        shortDescription:shortDescription,
+        genres:genres,
+        category:category,
+        price:price,
+        devs:devs,
+        pubs:pubs,
+        screenshots:screenshots,
+        trailer:trailer,
+        website:website,
+        headerImage:headerImage,
+        capsuleImage:capsuleImage
+    })
+    res.status(200).send(newGame)
+    } catch (err){
+        console.log(err);
+        res.send(err.message)
+    }
+}

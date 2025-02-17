@@ -1,6 +1,8 @@
 import {useState, useEffect} from "react";
 import {Link} from "react-router-dom";
 import { IoIosCloseCircle } from "react-icons/io";
+import { GoLinkExternal } from "react-icons/go";
+
 
 export default function SubmitGame() {
     const [gameId, setGameId] = useState(null);
@@ -11,14 +13,16 @@ export default function SubmitGame() {
         name: "",
         description: "",
         shortDescription: "",
-        category:[],
         price:0,
         devs:[],
         pubs:[],
         website:[],
         headerImage:"",
         capsuleImage:"",
-        screenshots:[]
+        screenshots:[],
+        genres: [],
+        trailer:[],
+        steamUrl: ""
     });
 
     useEffect(() => {
@@ -28,13 +32,16 @@ export default function SubmitGame() {
                 name: steamData[gameId].data.name || "",
                 description: steamData[gameId].data.detailed_description || "",
                 shortDescription: steamData[gameId].data.short_description || "",
-                price: 0,
+                price: parseInt(steamData[gameId].data.price_overview["final_formatted"].replace("₹", "").replace(",", "")) || 0,
                 devs: steamData[gameId].data.developers || "",
                 pubs: steamData[gameId].data.publishers || "",
                 website: steamData[gameId].data.website || "",
                 headerImage: steamData[gameId].data.header_image || "",
                 capsuleImage: steamData[gameId].data.capsule_image || "",
-                screenshots: steamData[gameId].data.screenshots || [],
+                screenshots: steamData[gameId].data.screenshots.map(screenshot=>screenshot.path_thumbnail) || [],
+                genres: steamData[gameId].data.genres.map(genre=> genre.description) || [],
+                trailer: steamData[gameId].data.movies.map(movie => ({tumbnail: movie.thumbnail, trailer: movie.webm["480"], name:movie.name})) || [],
+                steamUrl: "https://store.steampowered.com/app/"+gameId  || ""
             }));
         }
     }, [steamData, gameId]);
@@ -95,7 +102,6 @@ export default function SubmitGame() {
         }
     }
 
-
     return (
         <>
             <div className="max-w-lg mx-auto">
@@ -108,30 +114,40 @@ export default function SubmitGame() {
 
                { steamData[gameId] && (
                     <form onSubmit={handleSubmit} className="flex flex-row gap-3 space-between flex-wrap">
-                        <div  className="flex flex-col">
+                        <div  className="flex flex-col gap-1">
                             <div className="flex flex-row gap-2">
                                 <label htmlFor="" className="font-semibold underline uppercase">Name: </label>
                                 <input type="text" id="name" value={formData.name} onChange={handleChange}  placeholder="name" />
                             </div>
+                            <div className="flex flex-row gap-2">
+                                <label htmlFor="" className="font-semibold underline uppercase">SteamURL: </label>
+                                <div className="flex flex-row gap-2 items-center">
+                                    <a href={formData.steamUrl}><GoLinkExternal  className="w-[1em] h-[1em]"/></a>
+                                    <input type="text" id="name" className="w-full border-1" value={formData.steamUrl} onChange={handleChange}  placeholder="name" />
+                                </div>
+                            </div>
                             <label htmlFor="" className="font-semibold underline uppercase">Description: </label>
-                            <textarea className="w-2xl h-[150px] pb-2" id="description"  value={formData.description} placeholder="descriptions ......"/>
+                            <textarea className="border-1 p-1 rounded-sm" id="description"  value={formData.description} placeholder="descriptions ......"/>
                             <label htmlFor="" className="font-semibold underline uppercase">Short Description: </label>
-                            <textarea className="w-2xl h-[100px] pb-2" id="shortDescription" value={formData.shortDescription} placeholder="short descriptions ......"/>
-                            <div  className="flex flex-row gap-2">
-                                <label className="font-semibold underline uppercase" htmlFor="">Category: </label>
-                                <input type="text" placeholder="category"/>
+                            <textarea className="border-1 w-2xl h-auto pb-2" id="shortDescription" value={formData.shortDescription} placeholder="short descriptions ......"/>
+                            <div  className="flex flex-col gap-1 flex-wrap">
+                                <label className="font-semibold underline uppercase" htmlFor="">Genres: </label>
+                                {formData.genres && formData.genres.map((item, index) => (
+                                    <input type="text" placeholder="genres..." value={item} onChange={handleChange} className="border-1 w-full p-1 my-1" />
+                                ))}
+
                             </div>
                             <div  className="flex flex-row gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">Price: </label>
-                                <input type="text" placeholder="price"/>
+                                <label htmlFor="" className="font-semibold underline uppercase">Price (in ₹): </label>
+                                <input type="text" placeholder="price" value={formData.price}/>
                             </div>
-                            <div  className="flex flex-row gap-2    ">
+                            <div  className="flex flex-row gap-2">
                                 <label htmlFor="" className="font-semibold underline uppercase">Devs: </label>
-                                <input type="text" placeholder="devs" value={formData.devs} onChange={handleChange}/>
+                                <input type="text" className="border-1 w-full" placeholder="devs" value={formData.devs} onChange={handleChange}/>
                             </div>
                             <div  className="flex flex-row gap-2">
                                 <label htmlFor="" className="font-semibold underline uppercase">Pubs: </label>
-                                <input type="text" placeholder="pubs" value={formData.pubs} onChange={handleChange}/>
+                                <input type="text" className="border-1 w-full" placeholder="pubs" value={formData.pubs} onChange={handleChange}/>
                             </div>
                         </div>
                         <div>
@@ -145,27 +161,29 @@ export default function SubmitGame() {
                             </div>
                         </div>
                         <div>
-                            <div>
-                                <label htmlFor="">Trailer: </label>
-                                {steamData[gameId].data.movies && (
-                                    <video poster={steamData[gameId].data.movies[0].thumbnail} width="auto" height="393" src={steamData[gameId].data.movies[0].mp4[480]} controls/>
-                                )}
+                            <label htmlFor="" className="font-semibold underline uppercase">Trailer: </label>
+                            <div className="flex flex-row flex-wrap gap-2">
+                                {formData.trailer && formData.trailer.map((item, index) => (
+                                        <video poster={item.tumbnail} className="w-1/3 h-auto" src={item.trailer} controls title={item.name}/>
+                                ))}
                             </div>
+
                             <div>
                                 <label htmlFor="">Website: </label>
                                 <input type="text" value={formData.website} onChange={handleChange} placeholder="website"/>
                             </div>
                             <div>
                                 <label htmlFor="">Header Image: </label>
-                                <img src={formData.header_image} alt=""/>
-                                <input type="text" value={formData.header_image} onChange={handleChange} placeholder="headerImage"/>
+                                <img src={formData.headerImage} alt=""/>
+                                <input type="text" value={formData.headerImage} className="w-full h-auto" onChange={handleChange} placeholder="headerImage"/>
                             </div>
                             <div>
                                 <label htmlFor="">Capsule Image: </label>
-                                <img src={formData.capsule_image} alt=""/>
-                                <input type="text" placeholder="capsuleImage" value={formData.capsule_image} onChange={handleChange}/>
+                                <img src={formData.capsuleImage} alt=""/>
+                                <input type="text" placeholder="capsuleImage" className="w-full h-auto" value={formData.capsuleImage} onChange={handleChange}/>
                             </div>
                         </div>
+
 
                     </form>
                 )}

@@ -5,7 +5,7 @@ export default async function addGame (req, res) {
     try {
         const {
             appId, name, description, shortDescription,
-            genres, category, price, devs,
+            genres, price, devs,
             pubs, screenshots, trailer, website, headerImage,
             capsuleImage
         } = req.body;
@@ -16,7 +16,6 @@ export default async function addGame (req, res) {
         description:description,
         shortDescription:shortDescription,
         genres:genres,
-        category:category,
         price:price,
         devs:devs,
         pubs:pubs,

@@ -21,10 +21,6 @@ const gameSchema = new mongoose.Schema({
         type: Array,
         required: true
     },
-    category:{
-        type: String,
-        required: true
-    },
     price: {
         type: Number,
         required: true
@@ -58,6 +54,10 @@ const gameSchema = new mongoose.Schema({
     timeStamp: {
         type: Date,
         default: Date.now
+    },
+    steamUrl: {
+        type: String,
+        required: true,
     }
 });
 

@@ -35,7 +35,7 @@ export default function Homepage() {
                     {games && games.map(item => (
                         <div class="prod" id={`prod-id-${item._id}`}>
                             <div class="prod-image">
-                                <Link to={`/app/${item._id}`}>
+                                <Link to={`/product/${item._id}`}>
                                     <img src={item.headerImage} alt=""/>
                                 </Link>
                             </div>

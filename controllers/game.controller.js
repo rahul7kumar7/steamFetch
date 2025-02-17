@@ -7,7 +7,7 @@ export default async function addGame (req, res) {
             appId, name, description, shortDescription,
             genres, price, devs,
             pubs, screenshots, trailer, website, headerImage,
-            capsuleImage
+            capsuleImage, steamUrl
         } = req.body;
 
     const newGame = await Game.create({
@@ -23,7 +23,8 @@ export default async function addGame (req, res) {
         trailer:trailer,
         website:website,
         headerImage:headerImage,
-        capsuleImage:capsuleImage
+        capsuleImage:capsuleImage,
+        steamUrl:steamUrl
     })
     res.status(200).send(newGame)
     } catch (err){

@@ -10,6 +10,7 @@ export default function SubmitGame() {
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
+        appId: "",
         name: "",
         description: "",
         shortDescription: "",
@@ -26,30 +27,53 @@ export default function SubmitGame() {
     });
 
     useEffect(() => {
-        if (steamData[gameId]?.data) {
-            setFormData((prev) => ({
-                ...prev,
-                name: steamData[gameId].data.name || "",
-                description: steamData[gameId].data.detailed_description || "",
-                shortDescription: steamData[gameId].data.short_description || "",
-                price: parseInt(steamData[gameId].data.price_overview["final_formatted"].replace("₹", "").replace(",", "")) || 0,
-                devs: steamData[gameId].data.developers || "",
-                pubs: steamData[gameId].data.publishers || "",
-                website: steamData[gameId].data.website || "",
-                headerImage: steamData[gameId].data.header_image || "",
-                capsuleImage: steamData[gameId].data.capsule_image || "",
-                screenshots: steamData[gameId].data.screenshots.map(screenshot=>screenshot.path_thumbnail) || [],
-                genres: steamData[gameId].data.genres.map(genre=> genre.description) || [],
-                trailer: steamData[gameId].data.movies.map(movie => ({tumbnail: movie.thumbnail, trailer: movie.webm["480"], name:movie.name})) || [],
-                steamUrl: "https://store.steampowered.com/app/"+gameId  || ""
-            }));
+        const data = steamData[gameId]?.data;
+        if (data) {
+            setFormData({
+                appId: gameId || "",
+                name: data.name || "",
+                description: data.detailed_description || "",
+                shortDescription: data.short_description || "",
+                price: parseInt(data.price_overview?.final_formatted?.replace("₹", "").replace(",", "")) || 0,
+                devs: data.developers || [],
+                pubs: data.publishers || [],
+                website: data.website || "",
+                headerImage: data.header_image || "",
+                capsuleImage: data.capsule_image || "",
+                screenshots: data.screenshots?.map(s => s.path_thumbnail) || [],
+                genres: data.genres?.map(g => g.description) || [],
+                trailer: data.movies?.map(m => ({ thumbnail: m.thumbnail, trailer: m.webm["480"], name: m.name })) || [],
+                steamUrl: `https://store.steampowered.com/app/${gameId}`
+            });
         }
     }, [steamData, gameId]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("submit");
-    }
+        setLoading(true);
+        try {
+            const res = await fetch(`http://localhost:8080/game/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+            const data = await res.json();
+            if (data) {
+                console.log(data);
+                alert('game added successfully!');
+            } else {
+                console.log('Error in fetching data', data.message);
+                setError(`Error in fetching data: ${data.message}`);
+            }
+
+        } catch (error) {
+            console.log('Error encountered while creating game', error);
+            setError(`Error encountered while creating game: ${error}`);
+        } finally {
+            setLoading(false);
+        }
+
+    };
 
     const handleIdChange = async (e)   => {
         const id = e.target.value;
@@ -183,6 +207,8 @@ export default function SubmitGame() {
                                 <input type="text" placeholder="capsuleImage" className="w-full h-auto" value={formData.capsuleImage} onChange={handleChange}/>
                             </div>
                         </div>
+
+                        <button type="submit" className="rounded-sm p-2 bg-green-500 cursor-pointer hover:opacity-90">Add game to the database</button>
 
 
                     </form>

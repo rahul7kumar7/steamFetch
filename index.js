@@ -16,9 +16,9 @@ app.listen(port, ()=> {
 app.get("/", (req, res) => {
     res.send("Welcome to the app")
 })
-// mongoose.connect(process.env.MONGODB_URI).then(() => {
-//     console.log("MongoDB Connected")
-// }).catch(err => console.log(err))
+mongoose.connect(process.env.MONGODB_URI).then(() => {
+    console.log("MongoDB Connected")
+}).catch(err => console.log(err))
 
 app.use('/steam', steamRouter)
 app.use('/game', addGameRouter)

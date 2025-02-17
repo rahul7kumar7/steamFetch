@@ -4,7 +4,7 @@ import Header from "./Pages/Components/Header.jsx";
 import Signup from "./Pages/Signup.jsx";
 import Signin from "./Pages/Signin.jsx";
 import SubmitGame from "./Pages/SubmitGame.jsx";
-
+import Footer from "./Pages/Components/Footer.jsx"
 
 export default function App() {
     return (
@@ -16,6 +16,7 @@ export default function App() {
                 <Route path="/signin" element={<Signin />} />
                 <Route path="/submit" element={<SubmitGame />} />
             </Routes>
+            <Footer/>
         </BrowserRouter>
     )
 }

@@ -37,27 +37,27 @@ const gameSchema = new mongoose.Schema({
         type: Array,
         required: true
     },
+    steamUrl: {
+        type: String,
+        required: true,
+    },
+    headerImage: {
+        type: String,
+        required: true,
+    },
     trailer:{
         type: Array,
     },
     website: {
         type: String,
     },
-    headerImage: {
-        type: String,
-        required: true,
-    },
+
     capsuleImage: {
         type: String,
-        required: true,
     },
     timeStamp: {
         type: Date,
         default: Date.now
-    },
-    steamUrl: {
-        type: String,
-        required: true,
     }
 });
 

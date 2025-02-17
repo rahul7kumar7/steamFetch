@@ -1,6 +1,6 @@
 import Game from '../models/game.model.js'
 
-export default async function addGame (req, res) {
+export async function addGame (req, res) {
     console.log('ehhdskjhdkjshfdjkshdkjh')
     try {
         const {
@@ -30,5 +30,32 @@ export default async function addGame (req, res) {
     } catch (err){
         console.log(err);
         res.send(err.message)
+    }
+}
+
+// https://mongoosejs.com/docs/queries.html
+
+export async function fetchGame(req, res) {
+    const documentId = req.params.id
+    try{
+        const game = await Game.findById(documentId)
+        return res.status(200).send(game)
+    } catch(err){
+        console.log(err);
+        return res.send(err.message)
+    }
+}
+
+export async function fetchGames (req, res) {
+    try {
+        const games = await Game.find()
+        if (games){
+            return res.status(200).send(games)
+        } else {
+            return res.status(404).send('Games not found')
+        }
+    } catch(err){
+        console.log(err);
+        return res.send(err.message)
     }
 }

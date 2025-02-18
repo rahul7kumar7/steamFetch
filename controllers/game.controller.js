@@ -59,3 +59,26 @@ export async function fetchGames (req, res) {
         return res.send(err.message)
     }
 }
+
+export async function updateGame (req, res) {
+    console.log('updating game')
+    try {
+        const documentId = req.params.id
+        const game = await Game.findById(documentId)
+        console.log(`game found`)
+        if (game){
+            const updatedGame = await Game.findByIdAndUpdate(
+                documentId,
+                req.body,
+                {new:true}
+            )
+            res.status(200).send(updatedGame)
+        } else {
+            res.status(404).send('Games not found')
+        }
+
+    } catch (err){
+        console.log(err);
+        return res.send(err.message)
+    }
+}

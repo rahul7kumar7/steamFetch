@@ -46,7 +46,7 @@ export default function Homepage() {
                                     <span class="item-price">₹{item.price}</span>
                                 </div>
 
-                                <div class="prod-action">
+                                <div classr="prod-action">
                                     <a id="addToCart">
                                         <div class="prod-cart">
                                             <p>ADD TO CART</p>

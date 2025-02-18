@@ -1,15 +1,20 @@
-import {useState, useEffect} from "react";
-import {Link} from "react-router-dom";
-import { IoIosCloseCircle } from "react-icons/io";
-import { GoLinkExternal } from "react-icons/go";
+import {useState} from "react";
+import {Alert, Button, TextField} from "@mui/material";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import {FaCaretDown} from "react-icons/fa";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import InputLabel from "@mui/material/InputLabel";
+import Input from "@mui/material/Input";
+import InputAdornment from "@mui/material/InputAdornment";
+import { FaSteamSymbol } from "react-icons/fa";
 
 
 export default function SubmitGame() {
     const [gameId, setGameId] = useState(null);
-    const [steamData, setSteamData] = useState({});
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
+    const [steamData, setSteamData] = useState({
         appId: "",
         name: "",
         description: "",
@@ -26,27 +31,32 @@ export default function SubmitGame() {
         steamUrl: ""
     });
 
-    useEffect(() => {
-        const data = steamData[gameId]?.data;
-        if (data) {
-            setFormData({
-                appId: gameId || "",
-                name: data.name || "",
-                description: data.detailed_description || "",
-                shortDescription: data.short_description || "",
-                price: parseInt(data.price_overview?.final_formatted?.replace("₹", "").replace(",", "")) || 0,
-                devs: data.developers || [],
-                pubs: data.publishers || [],
-                website: data.website || "",
-                headerImage: data.header_image || "",
-                capsuleImage: data.capsule_image || "",
-                screenshots: data.screenshots?.map(s => s.path_thumbnail) || [],
-                genres: data.genres?.map(g => g.description) || [],
-                trailer: data.movies?.map(m => ({ thumbnail: m.thumbnail, trailer: m.webm["480"], name: m.name })) || [],
-                steamUrl: `https://store.steampowered.com/app/${gameId}`
-            });
+    const handleChange = (e, index=null) => {
+        if (e.target.type === 'text' || e.target.type === 'number' || e.target.id === 'shortDescription' || e.target.id === 'description') {
+            setSteamData({
+                ...steamData,
+                [e.target.id]: e.target.value,
+            })
         }
-    }, [steamData, gameId]);
+        if (e.target.id === `genre-${index}`){
+            const newGenre = [...steamData.genres]
+            newGenre[index] = e.target.value
+            setSteamData({...steamData, genres: newGenre})
+            console.log(steamData.genres);
+        }
+        if (e.target.id === `dev-${index}`){
+            const newDevs = [...steamData.devs]
+            newDevs[index] = e.target.value
+            setSteamData({...steamData, devs: newDevs})
+            console.log(steamData.devs);
+        }
+        if (e.target.id === `pub-${index}`){
+            const newPubs = [...steamData.pubs]
+            newPubs[index] = e.target.value
+            setSteamData({...steamData, pubs: newPubs})
+            console.log(steamData.pubs);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -55,7 +65,7 @@ export default function SubmitGame() {
             const res = await fetch(`http://localhost:8080/game/add`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(steamData),
             });
             const data = await res.json();
             if (data) {
@@ -81,157 +91,294 @@ export default function SubmitGame() {
         setGameId(id);
     }
 
-    const handleImage = (e) => {
-        console.log(e.target.currentSrc);
-        const imgModal = document.getElementById("imgModal");
-        const imgOverlay = document.getElementById("imgOverlay");
-        const imgElement = document.getElementById("modalImage");
-        imgElement.src = e.target.currentSrc
-        // .replace(".600x338", "");
-        imgModal.classList.remove("hidden");
-        imgOverlay.classList.remove("hidden");
-
-
-        imgModal.appendChild(imgModalImg);
-    };
-
-    const closeModal = () => {
-        document.getElementById("imgModal").classList.add("hidden");
-        document.getElementById("imgOverlay").classList.add("hidden");
-    };
-
-    const handleChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.id]: e.target.value,
-        }));
-    };
-    console.log(formData);
-
     const handleClick = async () =>{
         setLoading(true);
+        setError(null);
         if (gameId){
             try {
-                console.log('gameid is', gameId);
                 const res = await fetch(`http://localhost:8080/steam/get/${gameId}`)
-                const data = await res.json();
-                console.log(data);
-                setSteamData(data);
+                if (!res.ok){
+                    setError(`Error in getting response: ${res.statusText}`);
+                    return;
+                }
+                const gameData = await res.json();
+                if(!gameData){
+                    setError(`Error in fetching data`);
+                    return;
+                }
+                const fetchData = gameData[gameId].data
+                setSteamData({
+                    appId: gameId || "",
+                    name: fetchData.name || "",
+                    description: fetchData.detailed_description || "",
+                    shortDescription: fetchData.short_description || "",
+                    price: parseInt(fetchData.price_overview?.final_formatted?.replace("₹", "").replace(",", "")) || 0,
+                    devs: fetchData.developers || [],
+                    pubs: fetchData.publishers || [],
+                    website: fetchData.website || "",
+                    headerImage: fetchData.header_image || "",
+                    capsuleImage: fetchData.capsule_image || "",
+                    screenshots: fetchData.screenshots?.map(s => s.path_thumbnail) || [],
+                    genres: fetchData.genres?.map(g => g.description) || [],
+                    trailer: fetchData.movies?.map(m => ({ thumbnail: m.thumbnail, trailer: m.webm["480"], name: m.name })) || [],
+                    steamUrl: `https://store.steampowered.com/app/${gameId}`
+                });
             } catch (error) {
                 console.log('error is', error);
                 setError(error);
             } finally {
                 setLoading(false);
             }
+        } else {
+            setError(`Enter an ID to begin fetching data`);
+            setLoading(false);
         }
     }
 
     return (
-        <>
-            <div className="max-w-lg mx-auto">
-                <div className="flex flex-row gap-2 items-center  border-b-gray-700 border-1 p-3 justify-between">
-                    <h2 className="font-semibold text-lg">Enter Steam-Id</h2>
-                    <input type="text" className="border-1 p-2 rounded-sm" placeholder="id" onChange={handleIdChange} />
-                    <button onClick={handleClick} className="rounded-sm p-2 bg-green-500 cursor-pointer hover:opacity-90">Fetch Data</button>
-                    {loading ? <img src="https://www.wpfaster.org/wp-content/uploads/2013/06/loading-gif.gif" className="w-[40px] h-auto" alt=""/> : null}
-                </div>
+            <div className="max-w-lg mx-auto my-5">
+                {error && (
+                    <Alert severity="error" className="text-red-700 font-semibold my-2">{error}</Alert>
+                )}
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-wrap">
+                    <div  className="flex flex-col gap-4 w-2xl">
+                    <TextField
+                    required
+                    label="Enter Steam ID"
+                    id="steamId"
+                    variant="standard"
+                    onChange={handleIdChange}
+                    fullWidth
+                    type="text"
+                    slotProps={{
+                        input: {
+                            startAdornment: <InputAdornment position="start"><FaSteamSymbol /></InputAdornment>,
+                        },
+                    }}
+                />
+                <Button variant="contained" onClick={handleClick} color="success" className="w-1/2">Fetch Data</Button>
+                {loading ? <img src="https://www.wpfaster.org/wp-content/uploads/2013/06/loading-gif.gif" className="w-[40px] h-auto" alt=""/> : null}
+                    </div>
+                    </form>
 
-               { steamData[gameId] && (
-                    <form onSubmit={handleSubmit} className="flex flex-row gap-3 space-between flex-wrap">
-                        <div  className="flex flex-col gap-1">
-                            <div className="flex flex-row gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">Name: </label>
-                                <input type="text" id="name" value={formData.name} onChange={handleChange}  placeholder="name" />
-                            </div>
-                            <div className="flex flex-row gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">SteamURL: </label>
-                                <div className="flex flex-row gap-2 items-center">
-                                    <a href={formData.steamUrl}><GoLinkExternal  className="w-[1em] h-[1em]"/></a>
-                                    <input type="text" id="name" className="w-full border-1" value={formData.steamUrl} onChange={handleChange}  placeholder="name" />
-                                </div>
-                            </div>
-                            <label htmlFor="" className="font-semibold underline uppercase">Description: </label>
-                            <textarea className="border-1 p-1 rounded-sm" id="description"  value={formData.description} placeholder="descriptions ......"/>
-                            <label htmlFor="" className="font-semibold underline uppercase">Short Description: </label>
-                            <textarea className="border-1 w-2xl h-auto pb-2" id="shortDescription" value={formData.shortDescription} placeholder="short descriptions ......"/>
-                            <div  className="flex flex-col gap-1 flex-wrap">
-                                <label className="font-semibold underline uppercase" htmlFor="">Genres: </label>
-                                {formData.genres && formData.genres.map((item, index) => (
-                                    <input type="text" placeholder="genres..." value={item} onChange={handleChange} className="border-1 w-full p-1 my-1" />
-                                ))}
+                {loading ? "Loading...." : ""}
+
+
+                { steamData.name !== "" && (
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-wrap my-3">
+                        <div  className="flex flex-col gap-4 w-2xl">
+                            <div className="flex flex-col gap-4 w-2xl p-2" style={{backgroundImage: `linear-gradient(rgba(245, 245, 250, 0.85), rgba(235, 235, 240, 0.85))
+                                    , url(${steamData.headerImage})`, backgroundSize: "cover", backgroundPosition: "center"}}>
+                                <TextField
+                                    required
+                                    id="name"
+                                    label="Name"
+                                    defaultValue="name"
+                                    variant="standard"
+                                    value={steamData.name}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    type="text"
+                                />
+                                <TextField
+                                    required
+                                    id="steamUrl"
+                                    label="Steam Url"
+                                    defaultValue="https://store.steam.com"
+                                    variant="standard"
+                                    value={steamData.steamUrl}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    type="text"
+                                />
 
                             </div>
-                            <div  className="flex flex-row gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">Price (in ₹): </label>
-                                <input type="text" placeholder="price" value={formData.price}/>
-                            </div>
-                            <div  className="flex flex-row gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">Devs: </label>
-                                <input type="text" className="border-1 w-full" placeholder="devs" value={formData.devs} onChange={handleChange}/>
-                            </div>
-                            <div  className="flex flex-row gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">Pubs: </label>
-                                <input type="text" className="border-1 w-full" placeholder="pubs" value={formData.pubs} onChange={handleChange}/>
-                            </div>
+
+                            <Accordion>
+                                <AccordionSummary
+                                    expandIcon={<FaCaretDown />}
+                                >
+                                    Game Descriptions
+                                </AccordionSummary>
+                                <AccordionDetails className="flex flex-col gap-5">
+                                    <TextField
+                                        required
+                                        id="description"
+                                        label="Description"
+                                        defaultValue="description...."
+                                        variant="standard"
+                                        value={steamData.description}
+                                        onChange={handleChange}
+                                        multiline
+                                        rows={10}
+                                        fullWidth
+                                        type="text"
+                                    />
+                                    <TextField
+                                        required
+                                        id="shortDescription"
+                                        label="Short Description"
+                                        defaultValue="short description...."
+                                        variant="standard"
+                                        value={steamData.shortDescription}
+                                        onChange={handleChange}
+                                        multiline
+                                        rows={4}
+                                        fullWidth
+                                        type="text"
+                                    />
+
+                                </AccordionDetails>
+                            </Accordion>
+                            <Accordion>
+                                <AccordionSummary
+                                    expandIcon={<FaCaretDown />}
+                                >
+                                    Meta Information
+                                </AccordionSummary>
+                                <AccordionDetails className="flex flex-col gap-5">
+                                    <TextField
+                                        id="website"
+                                        label="Website"
+                                        defaultValue="https://store.steam.com"
+                                        variant="standard"
+                                        value={steamData.website}
+                                        onChange={handleChange}
+                                        fullWidth
+                                        type="text"
+                                    />
+                                    <div className="flex flex-col gap-1 flex-wrap">
+                                        <InputLabel htmlFor="genres">Genres</InputLabel>
+                                        <div className="p-2 bg-slate-200 flex flex-col gap-2">
+                                            {steamData.genres && steamData.genres.map((item, index) => (
+                                                <TextField
+                                                    required
+                                                    key={index}
+                                                    id={`genre-${index}`}
+                                                    defaultValue="genre"
+                                                    variant="standard"
+                                                    value={item}
+                                                    onChange={(e)=> handleChange(e,index)}
+
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1 flex-wrap">
+                                        <InputLabel htmlFor="price">Price</InputLabel>
+                                        <Input
+                                            id="price"
+                                            type="number"
+                                            label="Price"
+                                            value={steamData.price}
+                                            onChange={handleChange}
+                                            startAdornment={<InputAdornment position="start">₹</InputAdornment>}/>
+                                    </div>
+
+                                    <div  className="flex flex-col gap-1 flex-wrap">
+                                        <InputLabel htmlFor="developers">Developers</InputLabel>
+
+                                        <div className="p-2 bg-slate-200 flex flex-col gap-2">
+                                            {steamData.devs && steamData.devs.map((item, index) => (
+                                                <TextField
+                                                    required
+                                                    key={index}
+                                                    id={`dev-${index}`}
+                                                    defaultValue="dev"
+                                                    variant="standard"
+                                                    value={item}
+                                                    onChange={(e)=> handleChange(e,index)}
+
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div  className="flex flex-col gap-1 flex-wrap">
+                                        <InputLabel htmlFor="publishers">Publishers</InputLabel>
+                                        <div className="p-2 flex flex-col bg-slate-200 gap-2">
+                                            {steamData.pubs && steamData.pubs.map((item, index) => (
+                                                <TextField
+                                                    required
+                                                    fullWidth
+                                                    key={index}
+                                                    id={`pub-${index}`}
+                                                    defaultValue="dev"
+                                                    variant="standard"
+                                                    value={item}
+                                                    onChange={(e)=> handleChange(e,index)}
+
+                                                />
+                                            ))}
+                                        </div>
+
+                                    </div>
+
+
+                                </AccordionDetails>
+                            </Accordion>
+                            <Accordion>
+                                <AccordionSummary
+                                    expandIcon={<FaCaretDown />}
+                                >
+                                    Media (Screenshots & Trailers)
+                                </AccordionSummary>
+                                <AccordionDetails className="flex flex-col gap-5">
+                                    <InputLabel htmlFor="screenshots">Screenshots</InputLabel>
+                                    <div className="flex flex-row gap-3 flex-wrap">
+                                        {steamData.screenshots && steamData.screenshots.map(screenshot => (
+                                            <img src={screenshot} alt="" className="w-1/4 h-auto cursor-pointer transition-transform hover:scale-105"/>
+                                        ))}
+                                    </div>
+
+                                    <InputLabel htmlFor="trailers">Trailers</InputLabel>
+                                    <div className="flex flex-row flex-wrap gap-2">
+                                        {steamData.trailer && steamData.trailer.map((item, index) => (
+                                            <video poster={item.thumbnail} className="w-1/3 h-auto" src={item.trailer} controls title={item.name}/>
+                                        ))}
+                                    </div>
+                                </AccordionDetails>
+                            </Accordion>
+
+                            <Accordion>
+                                <AccordionSummary
+                                    expandIcon={<FaCaretDown />}
+                                >
+                                    Additional Media
+                                </AccordionSummary>
+                                <AccordionDetails className="flex flex-col gap-5">
+                                    <div>
+                                        <InputLabel htmlFor="header image">Header Image</InputLabel>
+                                        <img src={steamData.headerImage} alt=""/>
+                                        <TextField
+                                            required
+                                            id="headerImage"
+                                            variant="standard"
+                                            value={steamData.headerImage}
+                                            onChange={handleChange}
+                                            fullWidth
+                                            type="text"
+                                        />
+                                    </div>
+                                    <div>
+                                        <InputLabel htmlFor="publishers">Capsule Image</InputLabel>
+                                        <img src={steamData.capsuleImage} alt=""/>
+                                        <TextField
+                                            required
+                                            id="capsuleImage"
+                                            variant="standard"
+                                            value={steamData.capsuleImage}
+                                            onChange={handleChange}
+                                            fullWidth
+                                            type="text"
+                                        />
+                                    </div>
+
+                                </AccordionDetails>
+                            </Accordion>
+                            <Button variant="contained" color="success" type="submit" className="w-1/2 ">Add game to the database</Button>
                         </div>
-                        <div>
-                            <div className="flex flex-col gap-2">
-                                <label htmlFor="" className="font-semibold underline uppercase">Screenshots: </label>
-                                <div className="flex flex-row gap-2 flex-wrap">
-                                    {steamData && steamData[gameId].data.screenshots.map(screenshot => (
-                                        <img src={screenshot.path_thumbnail} onClick={handleImage} alt="" className="w-1/4 h-auto cursor-pointer transition-transform hover:scale-105"/>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="" className="font-semibold underline uppercase">Trailer: </label>
-                            <div className="flex flex-row flex-wrap gap-2">
-                                {formData.trailer && formData.trailer.map((item, index) => (
-                                        <video poster={item.tumbnail} className="w-1/3 h-auto" src={item.trailer} controls title={item.name}/>
-                                ))}
-                            </div>
-
-                            <div>
-                                <label htmlFor="">Website: </label>
-                                <input type="text" value={formData.website} onChange={handleChange} placeholder="website"/>
-                            </div>
-                            <div>
-                                <label htmlFor="">Header Image: </label>
-                                <img src={formData.headerImage} alt=""/>
-                                <input type="text" value={formData.headerImage} className="w-full h-auto" onChange={handleChange} placeholder="headerImage"/>
-                            </div>
-                            <div>
-                                <label htmlFor="">Capsule Image: </label>
-                                <img src={formData.capsuleImage} alt=""/>
-                                <input type="text" placeholder="capsuleImage" className="w-full h-auto" value={formData.capsuleImage} onChange={handleChange}/>
-                            </div>
-                        </div>
-
-                        <button type="submit" className="rounded-sm p-2 bg-green-500 cursor-pointer hover:opacity-90">Add game to the database</button>
-
-
                     </form>
                 )}
-
             </div>
-
-
-
-            <div id="imgOverlay" className="hidden fixed top-0 left-0 w-full h-full bg-black opacity-80 z-40" onClick={closeModal}></div>
-
-            <div
-                id="imgModal"
-                className="hidden fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-50 flex flex-col items-center"
-            >
-                <button
-                    onClick={closeModal}
-                    className="absolute top-1 right-1 cursor-pointer"
-                >
-                    <IoIosCloseCircle className="h-5 w-5" />
-                </button>
-                <img id="modalImage" className="max-w-full max-h-[80vh] rounded-lg shadow-lg" />
-            </div>
-        </>
     )
 }

@@ -129,28 +129,32 @@ export default function Editor() {
                 { steamData && (
                     <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-wrap">
                         <div  className="flex flex-col gap-4 w-2xl">
-                            <TextField
-                                required
-                                id="name"
-                                label="Name"
-                                defaultValue="name"
-                                variant="standard"
-                                value={steamData.name}
-                                onChange={handleChange}
-                                fullWidth
-                                type="text"
-                            />
-                            <TextField
-                                required
-                                id="steamUrl"
-                                label="Steam Url"
-                                defaultValue="https://store.steam.com"
-                                variant="standard"
-                                value={steamData.steamUrl}
-                                onChange={handleChange}
-                                fullWidth
-                                type="text"
-                            />
+                            <div className="flex flex-col gap-4 w-2xl p-2" style={{backgroundImage: `linear-gradient(rgba(245, 245, 250, 0.85), rgba(235, 235, 240, 0.85))
+                                    , url(${steamData.headerImage})`, backgroundSize: "cover", backgroundPosition: "center"}}>
+                                <TextField
+                                    required
+                                    id="name"
+                                    label="Name"
+                                    defaultValue="name"
+                                    variant="standard"
+                                    value={steamData.name}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    type="text"
+                                />
+                                <TextField
+                                    required
+                                    id="steamUrl"
+                                    label="Steam Url"
+                                    defaultValue="https://store.steam.com"
+                                    variant="standard"
+                                    value={steamData.steamUrl}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    type="text"
+                                />
+
+                            </div>
 
                             <Accordion>
                                 <AccordionSummary
@@ -291,7 +295,7 @@ export default function Editor() {
                                     <InputLabel htmlFor="trailers">Trailers</InputLabel>
                                     <div className="flex flex-row flex-wrap gap-2">
                                         {steamData.trailer && steamData.trailer.map((item, index) => (
-                                            <video poster={item.tumbnail} className="w-1/3 h-auto" src={item.trailer} controls title={item.name}/>
+                                            <video poster={item.thumbnail} className="w-1/3 h-auto" src={item.trailer} controls title={item.name}/>
                                         ))}
                                     </div>
                                 </AccordionDetails>
@@ -334,15 +338,8 @@ export default function Editor() {
                                 </AccordionDetails>
                             </Accordion>
 
-
-
-
-
-                            <Button variant="contained" color="success" type="submit" className="rounded-sm p-2 bg-green-500 w-1/2 cursor-pointer hover:opacity-90">Add game to the database</Button>
+                            <Button variant="contained" color="success" type="submit" className="rounded-sm p-2 bg-green-500 w-1/2 cursor-pointer hover:opacity-90">Update the Game</Button>
                         </div>
-
-
-
 
                     </form>
                 )}

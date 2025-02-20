@@ -3,7 +3,12 @@ import {useEffect, useState} from "react";
 import '../assets/css/product.css'
 import parse from 'html-react-parser';
 import Screenshots from "./Components/Screenshots.jsx"
-// import Trailers from "./Components/Trailers.jsx"
+import Trailers from "./Components/Trailers.jsx"
+import { Tabs } from "@chakra-ui/react"
+import { FaImages } from "react-icons/fa";
+import { FaPhotoVideo } from "react-icons/fa";
+import { Spinner } from "@chakra-ui/react"
+
 
 
 export default function Product(){
@@ -47,7 +52,9 @@ export default function Product(){
 
     return (
         <div>{loading && (
-            <p>Loading....</p>
+            <div  className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50">
+                <Spinner size={"lg"}/>
+            </div>
         )}
             {/*{error && !gameData && (*/}
             {/*    <ProductError error={error} />*/}
@@ -71,9 +78,28 @@ export default function Product(){
                                     </div>
                                 </div>
 
-                            {/*swiper code here*/}
-                                <Screenshots screenshots={gameData.screenshots} />
-                                {/*<Trailers trailers={gameData.trailer} />*/}
+                                    <Tabs.Root defaultValue="screenshots" variant={"outline"}>
+                                        <Tabs.List>
+                                            <div className="flex flex-row gap-5">
+                                                <Tabs.Trigger value="screenshots"  padding={5}>
+                                                    <FaImages />
+                                                    Screenshots
+                                                </Tabs.Trigger>
+                                                <Tabs.Trigger value="trailers" padding={5}>
+                                                    <FaPhotoVideo />
+                                                    Trailers
+                                                </Tabs.Trigger>
+                                            </div>
+                                        </Tabs.List>
+                                        <Tabs.Content value="screenshots">
+                                            <Screenshots screenshots={gameData.screenshots} />
+                                        </Tabs.Content>
+                                        <Tabs.Content value="trailers">
+                                            <Trailers trailers={gameData.trailer} />
+                                        </Tabs.Content>
+                                    </Tabs.Root>
+
+
                             </div>
 
                             <div className="top-right-container">

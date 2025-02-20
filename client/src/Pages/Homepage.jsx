@@ -1,8 +1,10 @@
 import {useState, useEffect} from "react";
 import {Link} from "react-router-dom";
-import "../assets/css/index.css"
+import "../assets/css/style.css"
 import { FaShoppingCart } from "react-icons/fa";
-import { CiHeart } from "react-icons/ci";
+import { FaRegHeart } from "react-icons/fa6";
+import {Spinner} from "@chakra-ui/react";
+
 
 export default function Homepage() {
 
@@ -29,37 +31,42 @@ export default function Homepage() {
 
     return (
         <div>
-            <div class="warning"><p></p></div>
-            <div class="main-container">
-                <div class="shop" id="shop">
+            <div>{loading && (
+                <div  className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 z-50">
+                    <Spinner size={"lg"}/>
+                </div>
+            )}
+            </div>
+            <div className="warning"><p></p></div>
+            <div className="main-container">
+                <div className="shop" id="shop">
                     {games && games.map(item => (
-                        <div class="prod" id={`prod-id-${item._id}`}>
-                            <div class="prod-image">
+                        <div className="prod" id={`prod-id-${item._id}`}>
+                            <div className="prod-image">
                                 <Link to={`/product/${item._id}`}>
                                     <img src={item.headerImage} alt=""/>
                                 </Link>
                             </div>
 
-                            <div class="prod-info">
-                                <div class="prod-details">
-                                    <a href="" class="item-title">{item.name}</a>
-                                    <span class="item-price">₹{item.price}</span>
+                            <div className="prod-info">
+                                <div className="prod-details">
+                                    <a href="" className="item-title truncate w-50">{item.name}</a>
+                                    <span className="item-price">₹{item.price}</span>
                                 </div>
 
-                                <div classr="prod-action">
+                                <div className="prod-action">
                                     <a id="addToCart">
-                                        <div class="prod-cart">
-                                            <p>ADD TO CART</p>
+                                        <div className="prod-cart">
+                                            <p> <FaShoppingCart /> ADD TO CART</p>
                                         </div>
                                     </a>
                                     <a id="addToWishlist">
-                                        <div class="prod-wishlist">
-                                            <p>WISHLIST</p>
+                                        <div className="prod-wishlist">
+                                            <p><FaRegHeart className="h-[20px]"/></p>
                                         </div>
                                     </a>
                                 </div>
                             </div>
-
                         </div>
                     ))}
                 </div>
